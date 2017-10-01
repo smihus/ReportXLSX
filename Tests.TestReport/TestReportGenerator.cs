@@ -1,5 +1,4 @@
-﻿using ClosedXML.Excel;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using ReportXLSX;
 using System.Collections.Generic;
 
@@ -9,7 +8,10 @@ namespace Tests.TestReport
     public class TestReportGenerator
     {
         ReportGenerator _sut;
-        private string _testDirectory;
+        string _testDirectory;
+        string _templateFile;
+        string _reportFile;
+        string _templateWorksheetName;
         List<object> _simpleDataList;
 
         [SetUp]
@@ -17,8 +19,11 @@ namespace Tests.TestReport
         {
             _testDirectory = TestContext.CurrentContext.TestDirectory;
 
+            _templateFile = _testDirectory + @"\Templates\Template.xlsx";
+            _templateWorksheetName = "SimpleTemplate";
+            _reportFile = _testDirectory + @"\SimpleReport.xlsx";
 
-
+            _sut = new ReportGenerator(_templateFile, _templateWorksheetName);
 
             _simpleDataList = new List<object>();
             _simpleDataList.Add(new { Company = "Company #1", Count = 10, Sum = 1000 });
@@ -26,37 +31,28 @@ namespace Tests.TestReport
             _simpleDataList.Add(new { Company = "Company #3", Count = 30, Sum = 3000 });
         }
 
-        [Test]
-        public void ShouldHasTemplateProperty()
+        [TearDown]
+        public void TeadDown()
         {
-            var result = _sut.Template;
-
-            Assert.That(result, Is.TypeOf<XLWorkbook>());
-
-            Assert.That(result, Is.Not.Null);
+            _sut.Dispose();
         }
 
         [Test]
         public void ShouldCreateSimpleReport()
         {
-            var templateFile = _testDirectory + @"\Templates\Template.xlsx";
-            var templateWorksheetName = "SimpleTemplate";
-            var reportFile = @"\SimpleReport.xlsx";
+            var range = "Head";
+            var wsReportName = "Simple company report";
+            _sut.WorksheetName = wsReportName;
+            _sut.InsertRange(range);
 
-            using (var sut = new ReportGenerator(templateFile, templateWorksheetName))
-            {
-                var range = "Head";
-                sut.InsertRange(range);
+            //foreach (var item in _simpleDataList)
+            //{
+            //    var itemRange = "Row";
+            //    _sut.InsertRange(itemRange, item);
+            //}
 
-                //foreach (var item in _simpleDataList)
-                //{
-                //    var itemRange = "Row";
-                //    sut.InsertRange(itemRange);
-                //}
-
-                reportFile = _testDirectory + reportFile;
-                sut.SaveAs(reportFile);
-            }
+            var reportFile = _testDirectory + _reportFile;
+            _sut.SaveAs(_reportFile);
         }
     }
 }

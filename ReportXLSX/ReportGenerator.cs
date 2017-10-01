@@ -17,6 +17,7 @@ namespace ReportXLSX
         {
             _templateFile = templateFile;
             _templateWorksheetName = templateWorksheetName;
+            WorksheetName = "Report";
         }
 
         public ReportGenerator(string templateFile, string templateWorksheetName, string reportFile) : this(templateFile, templateWorksheetName)
@@ -41,6 +42,29 @@ namespace ReportXLSX
             }
         }
 
+        public IXLWorksheet ReportWS
+        {
+            get
+            {
+                IXLWorksheet ws = null;
+                Report.TryGetWorksheet(WorksheetName, out ws);
+
+                if (ws == null)
+                    ws = Report.AddWorksheet(WorksheetName);
+
+                return ws;
+            }
+        }
+        public IXLWorksheet TemplateWS
+        {
+            get
+            {
+                IXLWorksheet ws = null;
+                Template.TryGetWorksheet(_templateWorksheetName, out ws);
+                return ws;
+            }
+        }
+
         public XLWorkbook Report
         {
             get
@@ -48,7 +72,6 @@ namespace ReportXLSX
                 if (_report == null)
                 {
                     _report = new XLWorkbook();
-                    _report.AddWorksheet("Report");
                 }
 
                 return _report;
@@ -58,6 +81,8 @@ namespace ReportXLSX
                 _report = value;
             }
         }
+
+        public string WorksheetName { get; set; }
 
         public void Dispose()
         {
@@ -70,12 +95,9 @@ namespace ReportXLSX
 
         public void InsertRange(string rangeName)
         {
-            var templateWS = Template.Worksheet(_templateWorksheetName);
-            var table = templateWS.Table("Table1");
-            var range = table.HeadersRow();
+            var range = TemplateWS.Range(rangeName);
 
-            var reportWS = Report.Worksheet("Report");
-            reportWS.Cell(1, 1).Value = range;
+            ReportWS.FirstCell().Value = range;
         }
 
         public void Save()
