@@ -1,0 +1,6 @@
+packages/
+ReportXLSX/bin/
+ReportXLSX/obj/
+Tests.TestReport/bin/
+Tests.TestReport/obj/
+.vs/
